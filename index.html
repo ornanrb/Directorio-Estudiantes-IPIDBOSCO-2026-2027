@@ -1,0 +1,182 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Directorio de Estudiantes 2026 - 2027</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="header">
+    <div class="header-container">
+      <div class="brand">
+        <div class="brand-icon">🎓</div>
+        <div class="brand-text">
+          <h1>Directorio de Estudiantes</h1>
+          <p>IPIDBOSCO &bull; Año Escolar 2026 - 2027</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button type="button" class="btn-primary" id="btnOpenAddModal"><span>➕</span> Agregar Estudiante</button>
+        <button type="button" class="btn-secondary" id="btnExportData" title="Descargar copia actualizada de estudiantes.js"><span>💾</span> Guardar Copia</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <section class="filters-card" aria-label="Filtros de búsqueda">
+      <div class="filters-grid">
+        <div class="filter-group">
+          <label for="gradeSelect">Grado</label>
+          <select id="gradeSelect" class="filter-control">
+            <option value="ALL">Todos los grados</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <div class="filter-header-row">
+            <label for="sectionSelect">Sección</label>
+            <button type="button" class="btn-inline-edit" id="btnRenameCurrentSection" style="display:none;">✏️ Renombrar</button>
+          </div>
+          <select id="sectionSelect" class="filter-control">
+            <option value="ALL">Todas las secciones</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="searchInput">Buscar estudiante</label>
+          <div class="search-wrapper">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchInput" class="filter-control with-icon" placeholder="Escribe apellido o nombre..." autocomplete="off">
+            <button type="button" id="clearSearchBtn" class="clear-search-btn">✕</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="results-bar">
+      <div class="results-count">Estudiantes encontrados: <span id="resultsCount">0</span></div>
+      <div class="active-filters">
+        <span class="filter-pill" id="activeGradePill">Todos los grados</span>
+        <span class="filter-pill" id="activeSectionPill">Todas las secciones</span>
+      </div>
+    </div>
+
+    <section id="studentsList" class="students-grid" aria-live="polite"></section>
+  </main>
+
+  <div id="studentModal" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <div class="modal-header">
+        <span class="modal-title">Ficha del Estudiante</span>
+        <div style="display:flex; gap:0.5rem; align-items:center;">
+          <button type="button" class="btn-secondary" id="btnEditStudent" style="padding:0.35rem 0.65rem; font-size:0.82rem;">✏️ Editar</button>
+          <button type="button" class="btn-danger" id="btnDeleteStudent">🗑️ Eliminar</button>
+          <button type="button" class="btn-close" id="modalCloseBtn">✕</button>
+        </div>
+      </div>
+      <div class="modal-body" style="text-align:center;">
+        <div id="photoContainer" class="photo-container" title="Haz clic para ver la fotografía a tamaño completo"></div>
+        <div class="photo-hint">🔍 Clic en la foto para ampliar a tamaño completo</div>
+        <h2 id="detailName" style="font-size:1.35rem; font-weight:800; color:var(--text-main);">Apellido, Nombre</h2>
+        <div id="detailId" style="font-size:0.85rem; color:var(--text-muted); margin-top:0.25rem;">Estudiante 0 de 0</div>
+        <div class="detail-tags">
+          <span id="detailGrade" class="detail-pill">Grado: 4to</span>
+          <span id="detailSection" class="detail-pill">Sección: INFORMÁTICA</span>
+        </div>
+      </div>
+      <div style="padding:1rem; background:var(--bg-subtle); display:flex; gap:0.5rem;">
+        <button type="button" class="btn-secondary" id="modalPrevBtn" style="flex:1;">◀ Anterior</button>
+        <button type="button" class="btn-primary" id="modalBackBtn" style="flex:2; justify-content:center;">Volver al listado</button>
+        <button type="button" class="btn-secondary" id="modalNextBtn" style="flex:1;">Siguiente ▶</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="lightboxOverlay" class="lightbox-overlay" role="dialog" aria-modal="true">
+    <button type="button" class="lightbox-close-btn" id="lightboxCloseBtn">✕</button>
+    <div class="lightbox-content">
+      <img id="lightboxImg" class="lightbox-img" src="" alt="Fotografía a tamaño completo">
+      <div id="lightboxCaption" class="lightbox-caption">Nombre</div>
+    </div>
+  </div>
+
+  <div id="formModal" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <div class="modal-header">
+        <span class="modal-title" id="formModalTitle">Agregar Nuevo Estudiante</span>
+        <button type="button" class="btn-close" id="formModalCloseBtn">✕</button>
+      </div>
+      <form id="studentForm" class="modal-body">
+        <input type="hidden" id="formStudentId">
+        <div class="form-group">
+          <label for="formApellido">Apellidos *</label>
+          <input type="text" id="formApellido" class="form-input" required placeholder="Ej. Gómez Pérez">
+        </div>
+        <div class="form-group">
+          <label for="formNombre">Nombres *</label>
+          <input type="text" id="formNombre" class="form-input" required placeholder="Ej. Carlos Manuel">
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.75rem;">
+          <div class="form-group">
+            <label for="formGrado">Grado *</label>
+            <select id="formGrado" class="form-input" required>
+              <option value="1ro">1ro</option>
+              <option value="2do">2do</option>
+              <option value="3ro">3ro</option>
+              <option value="4to" selected>4to</option>
+              <option value="5to">5to</option>
+              <option value="6to">6to</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="formSeccion">Sección *</label>
+            <select id="formSeccion" class="form-input" required></select>
+          </div>
+        </div>
+        <div class="form-group" id="customSectionGroup" style="display:none; background:var(--bg-subtle); padding:0.75rem; border-radius:var(--radius-sm); border:1px solid var(--border);">
+          <label for="formCustomSeccion">Nombre o Sigla de la Nueva Sección *</label>
+          <input type="text" id="formCustomSeccion" class="form-input" placeholder="Ej. MECATRÓNICA o H">
+        </div>
+        <div class="form-group">
+          <label for="formFotoInput">Fotografía (JPG / PNG / WEBP)</label>
+          <input type="file" id="formFotoInput" class="form-input" accept="image/*">
+          <div class="preview-box" id="formPhotoPreview">
+            <span style="font-size:0.75rem; color:var(--text-light);">Sin foto</span>
+          </div>
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:1.5rem;">
+          <button type="button" class="btn-secondary" id="formCancelBtn">Cancelar</button>
+          <button type="submit" class="btn-primary" id="formSubmitBtn">Guardar Estudiante</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="renameSectionModal" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-card" style="max-width: 420px;">
+      <div class="modal-header">
+        <span class="modal-title">Renombrar Sección</span>
+        <button type="button" class="btn-close" id="renameCloseBtn">✕</button>
+      </div>
+      <form id="renameSectionForm" class="modal-body">
+        <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1rem;">Esto cambiará el nombre de la sección para <strong>todos los estudiantes</strong> registrados en ella.</p>
+        <div class="form-group">
+          <label>Grado seleccionado</label>
+          <input type="text" id="renameGradeDisplay" class="form-input" disabled style="background:var(--bg-subtle);">
+        </div>
+        <div class="form-group">
+          <label for="renameNewSectionName">Nuevo nombre de la sección *</label>
+          <input type="text" id="renameNewSectionName" class="form-input" required placeholder="Ej. REFRIGERACIÓN">
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:1.25rem;">
+          <button type="button" class="btn-secondary" id="renameCancelBtn">Cancelar</button>
+          <button type="submit" class="btn-primary">Guardar Cambios</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <footer class="footer">IPIDBOSCO &bull; Gestión y Consulta de Fotografías 2026 - 2027</footer>
+  <script src="data/estudiantes.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
